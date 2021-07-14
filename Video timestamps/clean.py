@@ -1,6 +1,7 @@
 import spacy
 from word2number import w2n
 import contractions
+import re
 
 nlp = spacy.load('en_core_web_sm')
 
@@ -15,7 +16,8 @@ def remove_whitespace(text):
     text = text.strip()
     return " ".join(text.split())
 
-
+def remove_symbols(text):
+    return re.sub(r'[^\w]', ' ', text)
 
 def expand_contractions(text):
     """expand shortened words, e.g. don't to do not"""
