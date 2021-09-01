@@ -1,2 +1,11 @@
 Video timestamps/__pycache__
 Video timestamps/.vscode
+Audio/Include
+Audio/Lib
+Audio/Scripts
+Audio/pyvenv.cfg
+Audio/AudioChunks
+Audio/ChunkData
+Audio/NormalizedAudio
+Audio/SampleAudio
+Audio/SampleVideo
