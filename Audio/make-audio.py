@@ -13,10 +13,13 @@ def MakeAudio(FileName):
 def NormalizeAudio(FileName):
 
     RawAudio = AudioSegment.from_wav("SampleAudio/" + FileName + ".wav")
+
+    LowPassFilteredAudio = RawAudio.low_pass_filter(3000)
+    HighPassFilteredAudio = LowPassFilteredAudio.high_pass_filter(300)
     
     TargetdBFS = -20
-    Change = TargetdBFS - RawAudio.dBFS
-    NormalizedAudio = RawAudio.apply_gain(Change)
+    Change = TargetdBFS - HighPassFilteredAudio.dBFS
+    NormalizedAudio = HighPassFilteredAudio.apply_gain(Change)
 
     print(RawAudio.dBFS)
     print(NormalizedAudio.dBFS)
