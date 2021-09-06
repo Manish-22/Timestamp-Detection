@@ -5,76 +5,72 @@ import scipy.io.wavfile as wav
 import sys
 from pathlib import Path
 import math
+import itertools
+import shutil
+
+def MakeIndex():
+    
+    ChunkDataPath = path + "/ChunkData/" + FileName
+
+    print(ChunkDataPath)
+
+    if os.path.exists(ChunkDataPath) == False:
+        os.mkdir(ChunkDataPath)
+
+    FileIndexRaw = open("ChunkData/" + FileName + "/IndexRaw.txt", "w").close()
+
+    CommandGenIndex = "ffmpeg -i " +  "SampleVideo/" + FileName + ".mp4" + " -vf " + "select='gte(scene,0.05)',metadata=print:file=ChunkData/" + FileName + "/IndexRaw.txt" + " -an -f null -"
+    
+    os.system(CommandGenIndex)
+
+    FileIndexRaw = open("ChunkData/" + FileName + "/IndexRaw.txt", "r")
+    FileIndex = open("ChunkData/" + FileName + "/Index.txt", "w")
+
+    Corpus = [i[32:] if(i[32].isdigit()) else i[33:] for i in list(itertools.islice(FileIndexRaw, 0, None, 2))]
+
+    for i in Corpus:
+        FileIndex.write("%s" % i)
 
 def MakeChunks():
 
     NormalizedAudio = AudioSegment.from_wav("NormalizedAudio/" + FileName + ".wav")
-
-    (source_rate, source_sig) = wav.read("NormalizedAudio/" + FileName + ".wav")
-    Duration = len(source_sig) / float(source_rate)
-    MaxChunks = Duration / 8
     
-    ChunkDataPath = path + "/" + FileName
+    File = open("ChunkData/" + FileName + "/ChunkNames.txt", "w")
 
-    if os.path.exists(ChunkDataPath) == False:
-        os.mkdir(ChunkDataPath)
-    
-    File = open("ChunkData/" + FileName + "/ChunkNames.txt", "a")
-
-    SilenceLength = 425
-    SilenceThreshold = -43
-
-    while(True):
+    SilenceLength = 625
+    SilenceThreshold = -46
         
-        print("Splitting using silence length =", SilenceLength, "silence threshold =", SilenceThreshold)
-        
-        Chunks = split_on_silence(NormalizedAudio, min_silence_len = SilenceLength , silence_thresh = SilenceThreshold, keep_silence = True)
+    ChunkPath = path + "/AudioChunks/" + FileName
 
-        if(len(Chunks) > MaxChunks):
-            
-            if(len(Chunks) > 3 * MaxChunks):
-                SilenceThreshold = SilenceThreshold - 1
-            elif(len(Chunks) > 2.5 * MaxChunks):
-                SilenceLength = SilenceLength + 125
-            elif(len(Chunks) > 2 * MaxChunks):
-                SilenceLength = SilenceLength + 75
-            elif(len(Chunks) > 1.5 * MaxChunks):
-                SilenceLength = SilenceLength + 50
-            else:
-                SilenceLength = SilenceLength + 25
-            
-            print("Number of chunks =", len(Chunks), "Max chunks =", MaxChunks)
-        
+    if os.path.exists(ChunkPath) == False:
+        os.mkdir(ChunkPath)
+    else:
+        shutil.rmtree(ChunkPath)
+        os.mkdir(ChunkPath)
+
+    Chunks = split_on_silence(NormalizedAudio, min_silence_len = SilenceLength , silence_thresh = SilenceThreshold, keep_silence = True)
+
+    j = 0
+    for i, Chunk in enumerate(Chunks):
+        ChunkName = "chunk{0}.wav".format(i)
+                
+        if(j == 0):
+            File.write(ChunkName)
+            j = 1
         else:
-            
-            print("Number of chunks =", len(Chunks), "Max chunks =", MaxChunks)
-
-            ChunkPath = path + "/" + FileName
-
-            if os.path.exists(ChunkPath) == False:
-                os.mkdir(ChunkPath)
-
-            j = 0
-            for i, Chunk in enumerate(Chunks):
-                ChunkName = "chunk{0}.wav".format(i)
+            File.write("\n" + ChunkName)
                 
-                if(j == 0):
-                    File.write(ChunkName)
-                    j = 1
-                else:
-                    File.write("\n" + ChunkName)
-                
-                Chunk.export(ChunkPath + "/" + ChunkName, format="wav")
-            
-            break
+        Chunk.export(ChunkPath + "/" + ChunkName, format="wav")
+    
+    File.close()
 
 def ChunkDetails():
 
-    ChunkPath = path + "/" + FileName
+    ChunkPath = path + "\AudioChunks\\" + FileName
 
     NumberOFChunks = len([f for f in os.listdir(ChunkPath)if os.path.isfile(os.path.join(ChunkPath, f))])
 
-    File = open("ChunkData/" + FileName + "/Duration.txt", "a")
+    File = open("ChunkData/" + FileName + "/Duration.txt", "w")
 
     ChunkNames = []
 
@@ -96,11 +92,11 @@ def ChunkRemake():
     MinChunkLen = 10
     Error = 0.25
 
-    FileChunkNames = open("ChunkData/" + FileName + "/ChunkNames.txt", "a")
+    FileChunkNames = open("ChunkData/" + FileName + "/ChunkNames.txt", "r")
     FileDuration = open("ChunkData/" + FileName + "/Duration.txt", "r")
     FileIndexPoints = open("ChunkData/" + FileName + "/Index.txt", "r")
 
-    ChunkPath = path + "/" + FileName
+    ChunkPath = path + "\AudioChunks\\" + FileName
     NumberOFChunks = len([f for f in os.listdir(ChunkPath)if os.path.isfile(os.path.join(ChunkPath, f))])
 
     ChunkNamesRaw = FileChunkNames.readlines()
@@ -166,54 +162,74 @@ def ChunkRemake():
             
             FirstChunk.export("AudioChunks/" + FileName + "/" + ChunkNames[i], format = "wav")
 
-            NewChunkName = ""
-
-            for k in ChunkNames[i]:
-                if(k == "."):
-                    k = "001."
-                NewChunkName = NewChunkName + k
-            
+            NewChunkName = "Chunk" + str(NumberOFChunks) + ".wav"
+        
             SecondChunk.export("AudioChunks/" + FileName + "/" + NewChunkName, format = "wav")
 
             ChunkNames.insert(i + 1, NewChunkName)
     
-            Duration.insert[i + 1, Duration[i] - CutPoint2]
-            Duration[i] = CutPoint1
+            Duration.insert(i + 1, CutPoint2/1000)
+            Duration[i] = CutPoint1/1000
+            
+            Time = Time - Duration[i + 1]
 
-            i = i + 2
+            i = i + 1
             j = j + 1
+            NumberOFChunks = NumberOFChunks + 1
     
     i = 0
     j = 0
     Time = 0
-    
+    Flag = False
+
     while(i < NumberOFChunks):
-        
+
         Time = Time + Duration[i]
 
-        if((Time + Error > IndexPoints[j]) and (Time - Error < IndexPoints[j]) and (j < len(IndexPoints))):
+        if(j < len(IndexPoints)):
             
-            j = j + 1
-            i = i + 1
-            Flag = True
+            if((Time + Error > IndexPoints[j]) and (Time - Error < IndexPoints[j])):
+            
+                j = j + 1
 
-        elif(Duration[i] < MinChunkLen):
+                if((Duration[i] < MinChunkLen) and (i != 0)):
+                    MergeChunk(ChunkNames[i - 1], ChunkNames[i])
+                    Duration[i - 1] = Duration[i - 1] + Duration[i]
+                    Duration.pop(i)
+                    ChunkNames.pop(i)
+                    NumberOFChunks = NumberOFChunks - 1
+                    Flag = True
+                    continue
+                else:
+                    i = i + 1
+                    Flag = True
+                    Time = Time + Duration[i]
+
+                Flag = True
+
+        if(Duration[i] < MinChunkLen):
             
             if(i == 0):
                 
-                MergeChunk(ChunkNames[i], ChunkNames[i + 1])
-                Duration[i] = Duration[i] + Duration[i + 1]
-                Duration.pop(i + 1)
-                ChunkNames.pop(i + 1)
-                NumberOFChunks = NumberOFChunks - 1
+                if(Flag == False):
+                    MergeChunk(ChunkNames[i], ChunkNames[i + 1])
+                    Time = Time - Duration[i]
+                    Duration[i] = Duration[i] + Duration[i + 1]
+                    Duration.pop(i + 1)
+                    ChunkNames.pop(i + 1)
+                    NumberOFChunks = NumberOFChunks - 1
 
             elif(i + 1 == NumberOFChunks):
+
+                if(Flag == False):
                 
-                MergeChunk(ChunkNames[i - 1], ChunkNames[i])
-                Duration[i - 1] = Duration[i - 1] + Duration[i]
-                Duration.pop(i)
-                ChunkNames.pop(i)
-                NumberOFChunks = NumberOFChunks - 1
+                    MergeChunk(ChunkNames[i - 1], ChunkNames[i])
+                    Duration[i - 1] = Duration[i - 1] + Duration[i]
+                    Duration.pop(i)
+                    ChunkNames.pop(i)
+                    NumberOFChunks = NumberOFChunks - 1
+                else:
+                    i = i + 1
         
             else:
 
@@ -228,20 +244,19 @@ def ChunkRemake():
                 else:
                     
                     MergeChunk(ChunkNames[i], ChunkNames[i + 1])
+                    Time = Time - Duration[i]
                     Duration[i] = Duration[i] + Duration[i + 1]
                     Duration.pop(i + 1)
                     ChunkNames.pop(i + 1)
                     NumberOFChunks = NumberOFChunks - 1
-            
-            Flag = False
 
         else:
 
             i = i + 1
             Flag = False
 
-    FileNewChunkNames = open("ChunkData/" + FileName + "/NewChunkNames.txt", "a")
-    FileNewDuration = open("ChunkData/" + FileName + "/NewDuration.txt", "a")
+    FileNewChunkNames = open("ChunkData/" + FileName + "/NewChunkNames.txt", "w")
+    FileNewDuration = open("ChunkData/" + FileName + "/NewDuration.txt", "w")
 
     for i in range(0, len(ChunkNames)):
         if(i == 0):
@@ -286,7 +301,7 @@ def truncate(number, digits) -> float:
 if(len(sys.argv) > 1):
     
     FileName = sys.argv[1]
+    #MakeIndex()
     MakeChunks()
     ChunkDetails()
     ChunkRemake()
-    MergeChunk()

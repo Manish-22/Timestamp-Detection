@@ -172,4 +172,4 @@ if(len(sys.argv) > 1):
     FileName = sys.argv[1]
 
     AudioToText()
-    TextSplitter()
+    #TextSplitter()
