@@ -301,7 +301,7 @@ def truncate(number, digits) -> float:
 if(len(sys.argv) > 1):
     
     FileName = sys.argv[1]
-    #MakeIndex()
+    MakeIndex()
     MakeChunks()
     ChunkDetails()
     ChunkRemake()
