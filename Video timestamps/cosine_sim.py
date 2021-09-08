@@ -58,7 +58,7 @@ r_sim_w = []
 l1 = 0
 r1 = len(vecs)
 
-no_of_images =listdir('Images')
+no_of_images =len(listdir('Images'))
 group_size = no_of_images/3
 
 for i in range(len(vecs)):

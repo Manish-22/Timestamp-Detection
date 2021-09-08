@@ -29,7 +29,7 @@ X = np.array(vec_docs)
 
 n_clusters = 3
 kclusterer = KMeansClusterer(
-	n_clusters, distance=nltk.cluster.util.euclidean_distance, repeats=25)
+	n_clusters, distance=nltk.cluster.util.euclidean_distance, repeats=25,avoid_empty_clusters=True)
 labels = kclusterer.cluster(X, assign_clusters=True)
 print(labels)
 
