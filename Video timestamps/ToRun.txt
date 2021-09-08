@@ -1,7 +1,2 @@
-Get a text file of transition points:
-ffmpeg -i pesu.mp4 -vf "select='gte(scene,0.05)',metadata=print:file=scenescores.txt" -an -f null -
-
-Get images of transition points:
-ffmpeg -i pesu.mp4 -vsync 0 -vf select='gt(scene\,0.2)' -f image2 img-%04d.png
-
-Replace pesu.mp4 with video name
+Run transition_points.py file to get the segemented images as transition_points
+Run cosine_sim.py or KMeans.py to group those points into index points.
