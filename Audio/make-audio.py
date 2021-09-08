@@ -24,7 +24,7 @@ def NormalizeAudio(FileName):
     print(RawAudio.dBFS)
     print(NormalizedAudio.dBFS)
 
-    #NormalizedAudio.export("NormalizedAudio/" + FileName + ".wav", format = "wav")
+    NormalizedAudio.export("NormalizedAudio/" + FileName + ".wav", format = "wav")
 
 if(len(sys.argv) > 1):
     
