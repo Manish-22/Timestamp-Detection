@@ -3,6 +3,7 @@ import PIL
 import pytesseract
 import clean
 import os
+import numpy as np
 pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\\tesseract.exe'
 
 def extraction():
