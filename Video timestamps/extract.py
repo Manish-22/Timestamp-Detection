@@ -42,3 +42,25 @@ def extraction():
             doc_text.extend(clean.text_preprocessing(i))
         docs.append(doc_text)
     return docs
+
+def extract_heading():
+    l = []
+    no_of_images = len(os.listdir('Images'))
+    for k in range(1, no_of_images):
+        if(k < 10):
+            imgpth = "Images/img-000"+str(k)+".png"
+        else:
+            imgpth = "Images/img-00"+str(k)+".png"
+        image = cv2.imread(imgpth)
+        img = PIL.Image.open(imgpth)
+        w, h = img.size
+        points = [
+            np.array([[0, h*0.4], [0, h*0.25], [w, h*0.25], [w, h*0.4]], dtype=np.int32)]
+
+        [x, y, w, h] = cv2.boundingRect(points[0])
+        img1 = img.crop((x, y, x+w, y+h))
+        l.append(pytesseract.image_to_string(img1))
+
+    non_empty_docs = [clean.text_preprocessing(i) for i in l]
+    non_empty_docs = [x for x in non_empty_docs if x]
+    return non_empty_docs
