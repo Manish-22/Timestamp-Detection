@@ -20,12 +20,6 @@ def vectorizer(sentence, m):
 docs=extract.extraction()
 transpoints=transpoint()
 
-docs_index={}
-for i in range(len(docs)):
-	docs_index[i]=docs[i]
-
-res = dict((frozenset(v), k+1) for k, v in docs_index.items())
-
 non_empty_docs = [x for x in docs if x]
 model = Word2Vec(non_empty_docs, min_count = 1,sg=1)
 
@@ -42,5 +36,6 @@ kclusterer = KMeansClusterer(
 labels = kclusterer.cluster(X, assign_clusters=True)
 print(labels)
 
-for i,sentence in enumerate(non_empty_docs):
-	print(transpoints[i].strip('\n')+':',res[frozenset(sentence)],":",str(sentence),sep=' ')
+for i,sentence in enumerate(docs):
+	if sentence in non_empty_docs:
+		print(transpoints[i].strip('\n')+':',i+1,":",str(sentence),sep=' ')
