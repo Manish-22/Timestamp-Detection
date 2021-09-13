@@ -12,8 +12,6 @@ def MakeIndex():
     
     ChunkDataPath = path + "/ChunkData/" + FileName
 
-    print(ChunkDataPath)
-
     if os.path.exists(ChunkDataPath) == False:
         os.mkdir(ChunkDataPath)
 
