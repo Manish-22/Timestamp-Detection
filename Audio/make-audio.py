@@ -20,10 +20,7 @@ def NormalizeAudio(FileName):
     TargetdBFS = -20
     Change = TargetdBFS - HighPassFilteredAudio.dBFS
     NormalizedAudio = HighPassFilteredAudio.apply_gain(Change)
-
-    print(RawAudio.dBFS)
-    print(NormalizedAudio.dBFS)
-
+    
     NormalizedAudio.export("NormalizedAudio/" + FileName + ".wav", format = "wav")
 
 if(len(sys.argv) > 1):
