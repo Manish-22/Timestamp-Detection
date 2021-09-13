@@ -1,7 +1,9 @@
 from gensim.models import Word2Vec
 import numpy as np
-import extract 
+import extract
+from nltk.util import ngrams
 from os import listdir
+
 
 def cos_sim_word(x, y):
     X_set = set(x)
@@ -42,14 +44,31 @@ def vectorizer(sentence, m):
     return np.asarray(vec)/num_w
 
 
-docs =extract.extraction()
+def vectorizer_ngram(list_of_ngrams, m):
+    vec = []
+    num_w = 0
+    for Ngram in list_of_ngrams:
+        ng_avg = sum([m.wv[word] for word in Ngram])/len(Ngram)
+        if num_w == 0:
+            vec = ng_avg
+        else:
+            vec = np.add(vec, ng_avg)
+        num_w += 1
+
+    return np.asarray(vec)/num_w
+
+
+docs = extract.extraction()
 non_empty_docs = [x for x in docs if x]
 model = Word2Vec(non_empty_docs, min_count=1, sg=1)
 
+ng_docs = [ngrams(x, 3) for x in non_empty_docs]
+
 vecs = []
 
-for doc in non_empty_docs:
-    vecs.append(vectorizer(doc, model))
+
+for doc in ng_docs:
+    vecs.append(vectorizer_ngram(doc, model))
 
 left_sim = []
 right_sim = []
@@ -59,7 +78,7 @@ r_sim_w = []
 l1 = 0
 r1 = len(vecs)
 
-no_of_images =len(listdir('Images'))
+no_of_images = len(listdir('Images'))
 group_size = no_of_images/3
 
 for i in range(len(vecs)):
