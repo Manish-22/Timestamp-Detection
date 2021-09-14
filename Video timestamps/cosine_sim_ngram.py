@@ -28,6 +28,7 @@ def cos_sim_word(x, y):
 
 
 def cosine_sim(vA, vB):
+    # print(vA.shape,vB.shape)
     return np.dot(vA, vB) / (np.sqrt(np.dot(vA, vA)) * np.sqrt(np.dot(vB, vB)))
 
 
@@ -45,10 +46,21 @@ def vectorizer(sentence, m):
 
 
 def vectorizer_ngram(list_of_ngrams, m):
+    # print(list_of_ngrams[1])
     vec = []
     num_w = 0
     for Ngram in list_of_ngrams:
-        ng_avg = sum([m.wv[word] for word in Ngram])/len(Ngram)
+        first = 1
+        ng_avg = []
+        for word in Ngram:
+            if first == 1:
+                ng_avg = m.wv[word]
+            else:
+                np.add(ng_avg, m.wv[word])
+                first = 0
+
+        ng_avg = np.asarray(ng_avg)/len(Ngram)
+        #ng_avg = sum([m.wv[word] for word in Ngram])/len(Ngram)
         if num_w == 0:
             vec = ng_avg
         else:
@@ -62,13 +74,15 @@ docs = extract.extraction()
 non_empty_docs = [x for x in docs if x]
 model = Word2Vec(non_empty_docs, min_count=1, sg=1)
 
-ng_docs = [ngrams(x, 3) for x in non_empty_docs]
+ng_docs = [list(ngrams(x, 3)) for x in non_empty_docs]
 
 vecs = []
 
-
+# print(vectorizer_ngram(ng_docs[0],model))
 for doc in ng_docs:
     vecs.append(vectorizer_ngram(doc, model))
+
+#print("Shape of vec_ng[0] ",vecs[0])
 
 left_sim = []
 right_sim = []
@@ -98,10 +112,12 @@ for i in range(len(vecs)):
         r1 = i+group_size
 
     for j in range(i, int(l1)-1, -1):
-        l_vec_sum1 += cosine_sim(vecs[i], vecs[j])
+        if(np.asarray(vecs[i]).shape == np.asarray(vecs[j]).shape):
+            l_vec_sum1 += cosine_sim(np.asarray(vecs[i]), np.asarray(vecs[j]))
         l_vec_sum2 += cos_sim_word(non_empty_docs[i], non_empty_docs[j])
     for k in range(i+1, int(r1)+1):
-        r_vec_sum1 += cosine_sim(vecs[i], vecs[k])
+        if(np.asarray(vecs[i]).shape == np.asarray(vecs[k]).shape):
+            r_vec_sum1 += cosine_sim(np.asarray(vecs[i]), np.asarray(vecs[k]))
         r_vec_sum2 += cos_sim_word(non_empty_docs[i], non_empty_docs[k])
 
     left_sim.append(l_vec_sum1/group_size)
