@@ -24,16 +24,16 @@ def vectorizer_ngram(list_of_ngrams, m):
     vec = []
     num_w = 0
     for Ngram in list_of_ngrams:
-	first = 1
-	ng_avg = []
+        first = 1
+        ng_avg = []
         for word in Ngram:
-		if first == 1:
-			ng_avg = m.wv[word]
-		else:
-			np.add(ng_avg,m.wv[word])
-			first = 0
+            if first == 1:
+                ng_avg = m.wv[word]
+            else:
+                np.add(ng_avg,m.wv[word])
+                first = 0
 	
-	ng_avg = np.asarray(ng_avg)/len(Ngram)
+        ng_avg = np.asarray(ng_avg)/len(Ngram)
         #ng_avg = sum([m.wv[word] for word in Ngram])/len(Ngram)
         if num_w == 0:
             vec = ng_avg
