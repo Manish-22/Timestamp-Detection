@@ -1,9 +1,12 @@
 import os as os
 import sys
 
-Start = int(sys.argv[1])
-End = int(sys.argv[2])
-File = sys.argv[3]
+try:
+    Start = int(sys.argv[1])
+    End = int(sys.argv[2])
+    File = sys.argv[3]
+except:
+    print("python run-all.py <Starting video number> <Ending video number> <File to run>")
 
 if(File == "make-audio"):
     Command = "python make-audio.py"

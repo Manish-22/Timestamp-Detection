@@ -4,10 +4,6 @@ Video timestamps/Auxillary files
 Video timestamps/Images/*
 Video timestamps/Videos/*
 Video timestamps/transitionpoints.txt
-Audio/Include
-Audio/Lib
-Audio/Scripts
-Audio/pyvenv.cfg
 Audio/AudioChunks
 Audio/ChunkData
 Audio/NormalizedAudio
