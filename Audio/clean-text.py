@@ -1,21 +1,21 @@
 import spacy
 from word2number import w2n
 import contractions
-import re
 import sys
+
+nlp = spacy.load('en_core_web_sm')
+
+DeselectedStopWords = ['no', 'not']
+
+for i in DeselectedStopWords:
+    nlp.vocab[i].is_stop = False
 
 def CleanText(FileName):
     
-    nlp = spacy.load('en_core_web_sm')
-
-    DeselectedStopWords = ['no', 'not']
-
-    for i in DeselectedStopWords:
-        nlp.vocab[i].is_stop = False
-    
     FileText = open("ChunkData/" + FileName + "/Text.txt", "r")
-
     TextRaw = FileText.readlines()
+    FileText.close()
+
     Text = []
 
     for i in range(1, len(TextRaw), 2):
@@ -23,64 +23,62 @@ def CleanText(FileName):
     
     CleanedText = []
 
+    for i in Text:
+        CleanedText.append(TextPreprocessing(i))
 
-def remove_whitespace(text):
-    """remove extra whitespaces from text"""
-    text = text.strip()
-    return " ".join(text.split())
+    FileCleanedText = open("ChunkData/" + FileName + "/CleanedText.txt", "w")
 
-def remove_symbols(text):
-    return re.sub(r'[^\w]', ' ', text)
-
-def expand_contractions(text):
-    """expand shortened words, e.g. don't to do not"""
-    text = contractions.fix(text)
-    return text
-
-
-def text_preprocessing(text, accented_chars=True, contractions=True, 
-                       convert_num=True, extra_whitespace=True, 
-                       lemmatization=True, lowercase=True, punctuations=True,
-                       remove_html=True, remove_num=True, special_chars=True, 
-                       stop_words=True):
-    """preprocess text with default option set to true for all steps"""
-    if extra_whitespace == True: #remove extra whitespaces
-        text = remove_whitespace(text)
-    if contractions == True: #expand contractions
-        text = expand_contractions(text)
-    if lowercase == True: #convert all characters to lowercase
-        text = text.lower()
-
-    doc = nlp(text) #tokenise text
-
-    clean_text = []
+    for i in range(0, len(CleanedText)):
+        Temp = ""
+        for j in list(set(CleanedText[i])):
+            Temp = Temp + j + ', '
+        Temp = Temp[:-2]
+        if(i == len(CleanedText) - 1):
+            FileCleanedText.write(Temp)
+        else:
+            FileCleanedText.write(Temp + "\n")
     
-    for token in doc:
-        flag = True
-        edit = token.text
-        # remove stop words
-        if stop_words == True and token.is_stop and token.pos_ != 'NUM': 
-            flag = False
-        # remove punctuations
-        if punctuations == True and token.pos_ == 'PUNCT' and flag == True: 
-            flag = False
-        # remove special characters
-        if special_chars == True and token.pos_ == 'SYM' and flag == True: 
-            flag = False
-        # remove numbers
-        if remove_num == True and (token.pos_ == 'NUM' or token.text.isnumeric()) \
-        and flag == True:
-            flag = False
-        # convert number words to numeric numbers
-        if convert_num == True and token.pos_ == 'NUM' and flag == True:
-            edit = w2n.word_to_num(token.text)
-        # convert tokens to base form
-        elif lemmatization == True and token.lemma_ != "-PRON-" and flag == True:
-            edit = token.lemma_
-        # append tokens edited and not removed to list 
-        if edit != "" and flag == True:
-            clean_text.append(edit)        
-    return clean_text
+    FileCleanedText.close()
+
+
+def TextPreprocessing(Text):
+    
+    Text = Text.strip()
+    Text = " ".join(Text.split())
+        
+    Text = contractions.fix(Text)
+    
+    Text = Text.lower()
+
+    Temp = nlp(Text)
+
+    CleanText = []
+    
+    for Token in Temp:
+        Flag = True
+        edit = Token.text
+        
+        if Token.is_stop and Token.pos_ != 'NUM': 
+            Flag = False
+        
+        if Token.pos_ == 'PUNCT' and Flag == True: 
+            Flag = False
+        
+        if Token.pos_ == 'SYM' and Flag == True: 
+            Flag = False
+        
+        if (Token.pos_ == 'NUM' or Token.text.isnumeric()) and Flag == True:
+            Flag = False
+        
+        if Token.pos_ == 'NUM' and Flag == True:
+            edit = w2n.word_to_num(Token.text)
+        elif Token.lemma_ != "-PRON-" and Flag == True:
+            edit = Token.lemma_
+         
+        if edit != "" and Flag == True:
+            CleanText.append(edit)
+
+    return CleanText
 
 if(len(sys.argv) > 1):
     
