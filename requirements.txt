@@ -22,7 +22,7 @@ librosa==0.8.1
 llvmlite==0.36.0
 MarkupSafe==2.0.1
 murmurhash==1.0.5
-nltk==3.6.3
+nltk>=3.6.4
 numba==0.53.1
 numpy==1.20.3
 opencv-python==4.5.3.56
