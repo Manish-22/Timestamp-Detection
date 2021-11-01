@@ -9,4 +9,5 @@ Audio/ChunkData
 Audio/NormalizedAudio
 Audio/SampleAudio
 Audio/SampleVideo
+Audio/Indexes.txt
 workspace.code-workspace
