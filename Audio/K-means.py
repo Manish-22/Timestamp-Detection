@@ -63,11 +63,11 @@ def KMeans(FileName, NumClusters):
     
     VectorizedText = np.array(VectorizedText)
 
-    KClusterer = KMeansClusterer(NumClusters, distance = euclidean_distance, repeats = 25,avoid_empty_clusters = True)
+    KClusterer = KMeansClusterer(NumClusters, distance = euclidean_distance, repeats = 25, avoid_empty_clusters = True)
 
     Labels = KClusterer.cluster(VectorizedText, assign_clusters=True)
     
-    Prev = None
+    Prev = None 
 
     for i in range(0, len(Labels)):
         if(Prev is None):

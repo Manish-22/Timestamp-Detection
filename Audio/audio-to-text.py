@@ -19,7 +19,7 @@ def AudioToText():
         
         ChunkNames.append(temp)
 
-    FileChunkText = open("ChunkData/" + FileName + "/text.txt", "a")
+    FileChunkText = open("ChunkData/" + FileName + "/text.txt", "w")
 
     for i in ChunkNames:
         print("Processing", i)
