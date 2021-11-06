@@ -16,6 +16,8 @@ elif(File == "audio-to-text"):
     Command = "python audio-to-text.py"
 elif(File == "clean-text"):
     Command = "python clean-text.py"
+elif(File == "K-means"):
+    Command = "python K-means.py"
 elif(File != "all"):
     exit()
 
@@ -34,6 +36,10 @@ if(File == "all"):
         os.system(Command + " video" + str(i))
     
     Command = "python clean-text.py"
+    for i in range(Start, End + 1):
+        os.system(Command + " video" + str(i))
+    
+    Command = "python K-means.py"
     for i in range(Start, End + 1):
         os.system(Command + " video" + str(i))
         

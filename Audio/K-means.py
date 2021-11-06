@@ -4,7 +4,7 @@ from nltk.cluster import KMeansClusterer
 from nltk.cluster.util import euclidean_distance
 import sys
 
-def KMeans(FileName, NumClusters):
+def KMeans(FileName):
 
     FileCleanText = open("ChunkData/" + FileName + "/CleanedText.txt", "r")
     
@@ -35,8 +35,6 @@ def KMeans(FileName, NumClusters):
 
         ChunkDuration.append(float(Temp))
 
-    TransitionPoints = []
-
     for i in range(0, len(CleanText)):
         if(len(CleanText[i]) == 0):
             if(i < len(CleanText) - 1):
@@ -47,13 +45,9 @@ def KMeans(FileName, NumClusters):
                 CleanText.pop(i)
                 ChunkDuration[i - 1] = ChunkDuration[i] + ChunkDuration[i - 1]
                 ChunkDuration.pop(i)
-
-
-    Temp = 0
-    for i in ChunkDuration:
-        Temp = Temp + i
-        TransitionPoints.append(ToTime(Temp))
     
+    NumClusters = int(sum(ChunkDuration) // 240)
+
     Model = Word2Vec(CleanText, min_count = 1, sg = 1)
 
     VectorizedText = []
@@ -63,10 +57,31 @@ def KMeans(FileName, NumClusters):
     
     VectorizedText = np.array(VectorizedText)
 
-    KClusterer = KMeansClusterer(NumClusters, distance = euclidean_distance, repeats = 25, avoid_empty_clusters = True)
+    FileLabels = open("ChunkData/" + FileName + "/Labels.txt", "w")
 
-    Labels = KClusterer.cluster(VectorizedText, assign_clusters=True)
+    for i in range(0, 50):
+        KClusterer = KMeansClusterer(NumClusters, distance = euclidean_distance, repeats = 25, avoid_empty_clusters = True)
+
+        Labels = KClusterer.cluster(VectorizedText, assign_clusters=True)
+        for j in range(0, len(Labels)):
+            if(j != len(Labels) - 1):
+                FileLabels.write(str(Labels[j]) + ", ")
+            elif(i != 50):
+                FileLabels.write(str(Labels[j]) + "\n")
+            else:
+                FileLabels.write(str(Labels[j]))
+
+    FileLabels.close()
+
+def printTransitionPoints(ChunkDuration, Labels):
     
+    TransitionPoints = []
+
+    Temp = 0
+    for i in ChunkDuration:
+        Temp = Temp + i
+        TransitionPoints.append(ToTime(Temp))
+
     Prev = None 
 
     for i in range(0, len(Labels)):
@@ -102,9 +117,8 @@ def Vectorizer(Sentence, Model):
 
     return np.asarray(Vector)/n
 
-if(len(sys.argv) > 2):
+if(len(sys.argv) > 1):
     
     FileName = sys.argv[1]
-    NumClusters = int(sys.argv[2])
 
-    KMeans(FileName, NumClusters)
+    KMeans(FileName)
