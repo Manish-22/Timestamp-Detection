@@ -18,18 +18,20 @@ def buildAdjMatrix(FileName):
         
         Labels.append(Temp)
 
-    n = len(Labels[0])
+    nRows = len(Labels)
+    nCols = len(Labels[0])
 
-    AdjMatrix = [[0 for j in range(0, n)] for i in range(0, n)]
+    AdjMatrix = [[0 for j in range(0, nCols)] for i in range(0, nCols)]
 
-    for i in range(0, n):
-        for j in range(0, n):
-            if(i == j):
-                AdjMatrix[i][j] = -1
-            for k in range(j + 1, n):
+    for i in range(0, nRows):
+        for j in range(0, nCols):
+            for k in range(j + 1, nCols):
                 if Labels[i][j] == Labels[i][k]:
                     AdjMatrix[j][k] = AdjMatrix[j][k] + 1
                     AdjMatrix[k][j] = AdjMatrix[k][j] + 1
+    
+    for i in range(0, nCols):
+        AdjMatrix[i][i] = -1
 
     for i in AdjMatrix:
         for j in i:
