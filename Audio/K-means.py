@@ -3,6 +3,7 @@ import numpy as np
 from nltk.cluster import KMeansClusterer
 from nltk.cluster.util import euclidean_distance
 import sys
+import random
 
 def KMeans(FileName):
 
@@ -36,6 +37,14 @@ def KMeans(FileName):
         ChunkDuration.append(float(Temp))
 
     for i in range(0, len(CleanText)):
+        for j in range(0, len(CleanText[i])):
+            if(CleanText[i][j] == ''):
+                CleanText[i].remove(CleanText[i][j])
+                break
+    
+    i = 0
+
+    while i < len(CleanText):
         if(len(CleanText[i]) == 0):
             if(i < len(CleanText) - 1):
                 CleanText.pop(i)
@@ -45,8 +54,9 @@ def KMeans(FileName):
                 CleanText.pop(i)
                 ChunkDuration[i - 1] = ChunkDuration[i] + ChunkDuration[i - 1]
                 ChunkDuration.pop(i)
+        i = i + 1
     
-    NumClusters = int(sum(ChunkDuration) // 240)
+    NumClusters = int(sum(ChunkDuration) // 240) + 1
 
     Model = Word2Vec(CleanText, min_count = 1, sg = 1)
 
@@ -60,7 +70,9 @@ def KMeans(FileName):
     FileLabels = open("ChunkData/" + FileName + "/Labels.txt", "w")
 
     for i in range(0, 50):
-        KClusterer = KMeansClusterer(NumClusters, distance = euclidean_distance, repeats = 25, avoid_empty_clusters = True)
+
+        InitialCentroids = RandomizeCentroids(ChunkDuration, VectorizedText)
+        KClusterer = KMeansClusterer(NumClusters, initial_means = InitialCentroids ,distance = euclidean_distance, avoid_empty_clusters = True)
 
         Labels = KClusterer.cluster(VectorizedText, assign_clusters=True)
         for j in range(0, len(Labels)):
@@ -72,6 +84,27 @@ def KMeans(FileName):
                 FileLabels.write(str(Labels[j]))
 
     FileLabels.close()
+
+def RandomizeCentroids(ChunkDuration, Text):
+
+    CumulativeDuration = 0
+    IndexPool = []
+    Centroids = []
+
+    for i in range(0, len(ChunkDuration)):
+        if(CumulativeDuration + ChunkDuration[i] <= 240):
+            CumulativeDuration = CumulativeDuration + ChunkDuration[i]
+            IndexPool.append(i)
+        else:
+            CumulativeDuration = CumulativeDuration + ChunkDuration[i] - 240
+            Centroids.append(Text[random.choice(IndexPool)])
+            IndexPool = []
+            IndexPool.append(i)
+    
+    Centroids.append(Text[random.choice(IndexPool)])
+
+    return Centroids
+
 
 def printTransitionPoints(ChunkDuration, Labels):
     

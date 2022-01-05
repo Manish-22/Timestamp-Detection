@@ -25,6 +25,8 @@ def buildAdjMatrix(FileName):
 
     for i in range(0, nRows):
         for j in range(0, nCols):
+            if Labels[i][j] == 0:
+                continue
             for k in range(j + 1, nCols):
                 if Labels[i][j] == Labels[i][k]:
                     AdjMatrix[j][k] = AdjMatrix[j][k] + 1
